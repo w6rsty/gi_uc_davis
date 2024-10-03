@@ -1,7 +1,6 @@
 #include "ray.h"
 #include "math.h"
 #include <math.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 point_t ray_at(const ray_t *ray, float t) {
@@ -21,11 +20,18 @@ void destroy_scene(scene_t *scene) {
     clear_linked_list(&scene->lights);
 }
 
-void add_material(vec3f_t albedo, emissive_t emissive,  scene_t *scene) {
+void add_material(
+    vec3f_t albedo,
+    emissive_t emissive, float strength,
+    reflectance_t reflectance, float roughness,
+    scene_t *scene) {
     material_t *material = malloc(sizeof(material_t));
     material->id = scene->materials.size;
-    material->emissive = emissive;
     material->albedo = albedo;
+    material->emissive = emissive;
+    material->strength = strength;
+    material->reflectance = reflectance;
+    material->roughness = roughness;
     insert_back_linked_list(&scene->materials, material);
 }
 
@@ -176,6 +182,17 @@ color_t ray_shade(const ray_t *ray, const scene_t *scene) {
         }
         color_t ambient = mul_scalar_vec3f(&material->albedo, 0.1f);
         color = add_vec3f(&color, &ambient);
+    }
+    if (material->reflectance == REFLECTANCE_SPECULAR) {
+        ray_t reflected_ray = {};
+        reflected_ray.origin = srmin.point;
+        vec3f_t reverse_v = neg_vec3f(&ray->direction);
+        reflected_ray.direction = reflect(&reverse_v, &srmin.normal);
+
+        color_t reflected_color = ray_shade(&reflected_ray, scene);
+        reflected_color = mul_vec3f(&reflected_color, &material->albedo);
+        reflected_color = mul_scalar_vec3f(&reflected_color, material->roughness);
+        color = add_vec3f(&color, &reflected_color);
     }
     // Depth
     // color_t ambient = {1, 1, 1};

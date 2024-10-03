@@ -52,10 +52,18 @@ typedef enum emissive {
     EMISSIVE_TRUE
 } emissive_t;
 
+typedef enum reflectance {
+    REFLECTANCE_DIFFUSE,
+    REFLECTANCE_SPECULAR
+} reflectance_t;
+
 typedef struct {
     uint32_t id;
-    emissive_t emissive;
     vec3f_t albedo;
+    emissive_t emissive;
+    float strength;
+    reflectance_t reflectance;
+    float roughness;
 } material_t;
 
 /* Scene */
@@ -73,7 +81,11 @@ typedef struct {
 
 void create_scene(scene_t *scene);
 void destroy_scene(scene_t *scene);
-void add_material(vec3f_t albedo, emissive_t emissive, scene_t *scene);
+void add_material(
+    vec3f_t albedo,
+    emissive_t emissive, float strength,
+    reflectance_t reflectance, float roughness,
+    scene_t *scene);
 // Temporary, will be removed
 void add_light(color_t color, point_t position, scene_t *scene);
 void add_sphere(point_t center, float radius, uint32_t material_id, scene_t *scene);

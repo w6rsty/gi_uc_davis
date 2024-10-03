@@ -21,8 +21,10 @@ vec3f_t mul_scalar_vec3f(const vec3f_t *a, float b);
 float dot_vec3f(const vec3f_t *a, const vec3f_t *b);
 vec3f_t cross_vec3f(const vec3f_t *a, const vec3f_t *b);
 float length_vec3f(const vec3f_t *a);
+vec3f_t neg_vec3f(const vec3f_t *a);
 
 vec3f_t normalize(const vec3f_t *a);
+vec3f_t reflect(const vec3f_t *v, const vec3f_t *normal);
 
 void format_vec3f(const vec3f_t *a);
 

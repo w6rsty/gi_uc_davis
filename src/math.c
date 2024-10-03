@@ -67,6 +67,14 @@ float length_vec3f(const vec3f_t *a) {
     return sqrt(a->x * a->x + a->y * a->y + a->z * a->z);
 }
 
+vec3f_t neg_vec3f(const vec3f_t *a) {
+    vec3f_t result;
+    result.x = -a->x;
+    result.y = -a->y;
+    result.z = -a->z;
+    return result;
+}
+
 vec3f_t normalize(const vec3f_t *a) {
     vec3f_t result;
     float length = sqrt(a->x * a->x + a->y * a->y + a->z * a->z);
@@ -78,6 +86,11 @@ vec3f_t normalize(const vec3f_t *a) {
         result.x = result.y = result.z = 0;
     }
     return result;
+}
+
+vec3f_t reflect(const vec3f_t *v, const vec3f_t *normal) {
+    vec3f_t result = mul_scalar_vec3f(normal, 2.0f * dot_vec3f(v, normal));
+    return sub_vec3f(&result, v);
 }
 
 void format_vec3f(const vec3f_t *a) {

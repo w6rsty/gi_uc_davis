@@ -72,16 +72,22 @@ int hit_sphere(const ray_t *ray, const sphere_t *sphere, shade_record_t *srmin) 
     if (discriminant < 0) {
         return -1;
     }
-    float root = (-half_b - sqrtf(discriminant)) / a;
-    if (root < srmin->tmin && root > 0) {
+    float sqrtd = sqrtf(discriminant);
+    float root = (-half_b - sqrtd) / a;
+    if (root < 0) {
+        root = (-half_b + sqrtd) / a;
+    }
+
+    if (root >= 0 && root < srmin->tmin) {
         srmin->tmin = root;
         srmin->point = ray_at(ray, root);
-        vec3f_t outward_normal = sub_vec3f(&srmin->point, &sphere->center);
-        srmin->normal = normalize(&outward_normal);
+        vec3f_t normal = sub_vec3f(&srmin->point, &sphere->center);
+        srmin->normal = normalize(&normal);
         srmin->object_id = sphere->hitable.id;
         srmin->material_id = sphere->hitable.material_id;
         return 1;
     }
+
     return -1;
 }
 
@@ -148,7 +154,10 @@ int hit_scene(const ray_t *ray, const scene_t *scene, shade_record_t *srmin) {
     return result;
 }
 
-color_t ray_shade(const ray_t *ray, const scene_t *scene) {
+color_t ray_shade(const ray_t *ray, const scene_t *scene, uint32_t depth) {
+    if (++depth > MAX_DEPTH) {
+        return (color_t){0, 0, 0};
+    }
     color_t color = {0.01f, 0.01f, 0.01f};
     shade_record_t srmin = {};
     srmin.tmin = 10000;
@@ -183,13 +192,13 @@ color_t ray_shade(const ray_t *ray, const scene_t *scene) {
         color_t ambient = mul_scalar_vec3f(&material->albedo, 0.1f);
         color = add_vec3f(&color, &ambient);
     }
-    if (material->reflectance == REFLECTANCE_SPECULAR) {
+    if (material->reflectance &= REFLECTANCE_SPECULAR) {
         ray_t reflected_ray = {};
         reflected_ray.origin = srmin.point;
         vec3f_t reverse_v = neg_vec3f(&ray->direction);
         reflected_ray.direction = reflect(&reverse_v, &srmin.normal);
 
-        color_t reflected_color = ray_shade(&reflected_ray, scene);
+        color_t reflected_color = ray_shade(&reflected_ray, scene, depth);
         reflected_color = mul_vec3f(&reflected_color, &material->albedo);
         reflected_color = mul_scalar_vec3f(&reflected_color, material->roughness);
         color = add_vec3f(&color, &reflected_color);

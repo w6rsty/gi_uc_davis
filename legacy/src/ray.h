@@ -5,6 +5,8 @@
 #include "ds.h"
 #include <stdint.h>
 
+#define MAX_DEPTH 32
+
 typedef struct {
     point_t origin;
     vec3f_t direction;
@@ -53,8 +55,9 @@ typedef enum emissive {
 } emissive_t;
 
 typedef enum reflectance {
-    REFLECTANCE_DIFFUSE,
-    REFLECTANCE_SPECULAR
+    REFLECTANCE_DIFFUSE     = 0x000000001,
+    REFLECTANCE_SPECULAR    = 0x000000002,
+    REFLECTANCE_REFRACTIVE  = 0x000000004,
 } reflectance_t;
 
 typedef struct {
@@ -97,6 +100,6 @@ int hit_sphere(const ray_t *ray, const sphere_t *sphere, shade_record_t *srmin);
 int hit_triangle(const ray_t *ray, const triangle_t *triangle, shade_record_t *srmin);
 
 int hit_scene(const ray_t *ray, const scene_t *scene, shade_record_t *srmin);
-color_t ray_shade(const ray_t *ray, const scene_t *scene);
+color_t ray_shade(const ray_t *ray, const scene_t *scene, uint32_t depth);
 
 #endif

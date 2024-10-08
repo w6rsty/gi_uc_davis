@@ -2,8 +2,8 @@
 #include "math.h"
 #include "ray.h"
 
-static int Width = 1920;
-static int Height = 1080;
+static int Width = 800;
+static int Height = 600;
 static vec3f_t CameraPos = {0.0f, 0.0f, 1.1f};
 static float ScreenDistance = 1.0f;
 
@@ -40,7 +40,7 @@ int main(int argc, char *argv[]) {
 
     scene_t scene;
     create_scene(&scene);
-    add_material((vec3f_t){0.50f, 0.50f, 0.50f}, EMISSIVE_FALSE, 0.0f, REFLECTANCE_DIFFUSE, 0.0f, &scene); // 0
+    add_material((vec3f_t){0.50f, 0.00f, 0.50f}, EMISSIVE_FALSE, 0.0f, REFLECTANCE_DIFFUSE, 0.0f, &scene); // 0
     add_material((vec3f_t){0.56f, 0.17f, 0.11f}, EMISSIVE_FALSE, 0.0f, REFLECTANCE_DIFFUSE, 0.0f, &scene); // 1
     add_material((vec3f_t){0.20f, 0.34f, 0.12f}, EMISSIVE_FALSE, 0.0f, REFLECTANCE_DIFFUSE, 0.0f, &scene); // 2
     add_material((vec3f_t){1.00f, 1.00f, 1.00f}, EMISSIVE_FALSE, 0.0f, REFLECTANCE_SPECULAR, 0.4f, &scene); // 3
@@ -50,16 +50,16 @@ int main(int argc, char *argv[]) {
 
     add_sphere((point_t){-0.2f, -0.4f, 0.3f}, 0.1f, 3, &scene); // 0
     add_sphere((point_t){ 0.1f, -0.3f, 0.0f}, 0.2f, 3, &scene); // 1
-    add_triangle(face_0, 3, &scene); // 2
-    add_triangle(face_1, 3, &scene); // 3
+    add_triangle(face_0, 0, &scene); // 2
+    add_triangle(face_1, 0, &scene); // 3
     add_triangle(face_2, 2, &scene); // 4
     add_triangle(face_3, 2, &scene); // 5
     add_triangle(face_4, 1, &scene); // 6
     add_triangle(face_5, 1, &scene); // 7
     add_triangle(face_6, 0, &scene); // 8
     add_triangle(face_7, 0, &scene); // 9
-    add_triangle(face_8, 3, &scene); // 10
-    add_triangle(face_9, 3, &scene); // 11
+    add_triangle(face_8, 0, &scene); // 10
+    add_triangle(face_9, 0, &scene); // 11
 
     image_t image;
     create_image(Width, Height, &image);
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
             vec3f_t direction = sub_vec3f(&screen_pos, &CameraPos);
             ray.direction = normalize(&direction);
 
-            color_t color = ray_shade(&ray, &scene);
+            color_t color = ray_shade(&ray, &scene, 0);
             set_pixel_image(&image, x, y, color_to_uint32(&color));
         }
     }

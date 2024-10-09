@@ -1,6 +1,6 @@
-use crate::math::{Point, Color};
+use crate::math::{direction_reflect, Color, Point};
 use crate::primitive::{Triangle, Sphere};
-use crate::ray::{Hitable, Material, PointLight, Ray, ShaderRecord};
+use crate::ray::{Hitable, Material, PointLight, Ray, Reflectance, ShaderRecord};
 
 pub struct Scene {
     pub hitables: Vec<Box<dyn Hitable>>,
@@ -37,14 +37,53 @@ impl Scene {
         self.point_lights.push(point_light);
     }
 
-    pub fn shade(&self, ray: &Ray) -> Color {
-        if let Some((_t, record)) = self.hit_all(ray, f32::INFINITY) {
-            self.materials[record.material_id].albedo
-        } else {
-            Color::ZERO
+    pub fn shade(&self, ray: &Ray, depth: u32) -> Color {
+        let mut result = Color::ZERO;
+        if depth > 64 {
+            return result;
+        }        
+        if let Some((_, record)) = self.hit_all(ray, f32::INFINITY) {
+            let material = &self.materials[record.material_id];
+            
+
+            match material.reflectance {
+                Reflectance::Reflective => {
+                    if record.normal.dot(-ray.direction) > 0.0 {
+                        let reflect_ray = Ray::new(
+                            record.point,
+                            direction_reflect(-ray.direction, record.normal)
+                        );
+                        let att: f32 = 0.7;
+                        result += self.shade(&reflect_ray, depth + 1) * att.powi(depth as i32);
+                    }
+                },
+                _ => {}
+            }
+
+            // light
+            for light in self.point_lights.iter() {
+                let distance = (light.position - record.point).length();
+                let mut stmin = f32::INFINITY;
+                let shadow_ray = Ray::new(
+                    record.point,
+                    (light.position - record.point).normalize()
+                );
+                if let Some((st, _)) = self.hit_all(&shadow_ray, stmin) {
+                    stmin = st;
+                }
+                if stmin > distance {
+                let kd = shadow_ray.direction.dot(record.normal).max(0.0);
+                    result += material.albedo * light.color * light.intensity * kd;
+                }
+            }
+
+            result += material.albedo * 0.2; // ambient
         }
+
+        result
     }
 
+    /// Find a closest hit
     fn hit_all(&self, ray: &Ray, tmin: f32) -> Option<(f32, ShaderRecord)> {
         let mut tmin = tmin;
         let mut result = None;

@@ -1,6 +1,6 @@
 use gi::image::Image;
 use gi::math::{Color, Point, Vec3};
-use gi::ray::{Material, PointLight, Ray};
+use gi::ray::{Material, PointLight, Ray, Reflectance};
 use gi::scene::Scene;
 
 const WIDTH: u32 = 800;
@@ -10,7 +10,7 @@ const ASPECT_RATIO: f32 = WIDTH as f32 / HEIGHT as f32;
 fn main() {
     let cube = [
         Point::new(0.5, 0.5, 0.5),    // 0
-        Point::new(0.5, 0.5, -0.5),   // 1
+        Point::new(0.5, 0.5, -0.5),   // 1 
         Point::new(0.5, -0.5, 0.5),   // 2
         Point::new(0.5, -0.5, -0.5),  // 3
         Point::new(-0.5, 0.5, 0.5),   // 4
@@ -21,17 +21,28 @@ fn main() {
 
     let mut scene = Scene::new();
     scene.add_material(Material {
+        emissive: false,
+        reflectance: Reflectance::Plain,
         albedo: Vec3::new(1.00, 1.00, 1.00),
     });
     scene.add_material(Material {
+        emissive: false,
+        reflectance: Reflectance::Plain,
         albedo: Vec3::new(0.56, 0.17, 0.11),
     });
     scene.add_material(Material {
+        emissive: false,
+        reflectance: Reflectance::Plain,
         albedo: Vec3::new(0.20, 0.34, 0.12),
     });
+    scene.add_material(Material {
+        emissive: false,
+        reflectance: Reflectance::Reflective,
+        albedo: Vec3::ZERO,
+    });  
     
-    scene.add_traingle(0, cube[7], cube[6], cube[3]); // Bottom
-    scene.add_traingle(0, cube[6], cube[2], cube[3]);
+    scene.add_traingle(3, cube[6], cube[2], cube[3]); // Bottom
+    scene.add_traingle(3, cube[6], cube[3], cube[7]);
     scene.add_traingle(0, cube[0], cube[5], cube[1]); // Top
     scene.add_traingle(0, cube[0], cube[4], cube[5]);
     scene.add_traingle(1, cube[4], cube[6], cube[7]); // Left
@@ -41,12 +52,13 @@ fn main() {
     scene.add_traingle(0, cube[5], cube[7], cube[3]); // Back
     scene.add_traingle(0, cube[5], cube[3], cube[1]);
 
-    scene.add_sphere(1, Point::new(0.0, 0.0, 0.0), 0.1);
+    scene.add_sphere(1, Point::new(-0.2, -0.3,  0.2), 0.2);
+    scene.add_sphere(3, Point::new( 0.2, -0.3, -0.2), 0.2);
 
     scene.add_point_light(PointLight {
-        position: Point::new(0.0, 0.0, 0.0),
-        intensity: 1.0,
-        color: Color::new(1.0, 1.0, 1.0),
+        position: Point::new(0.0, 0.2, 0.4),
+        intensity: 0.4,
+        color: Color::new(1.00, 0.95, 0.90),
     });
 
     let camera_pos: Point = Point::new(0.0, 0.0, 1.1);
@@ -63,7 +75,7 @@ fn main() {
                 (Vec3::new(fx, fy, camera_pos.z - screen_distance) - camera_pos).normalize(),
             );
 
-            image.set_pixel(x, y, scene.shade(&ray));
+            image.set_pixel(x, y, scene.shade(&ray, 1));
         }
     }
 

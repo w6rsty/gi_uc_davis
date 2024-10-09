@@ -216,3 +216,7 @@ impl Color {
         format!("{} {} {}", r, g, b)
     }
 }
+
+pub fn direction_reflect(v: Vec3, n: Vec3) -> Vec3 {
+    n * v.dot(n) * 2.0 -v
+}

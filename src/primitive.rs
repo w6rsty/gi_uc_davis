@@ -42,11 +42,12 @@ impl Hitable for Sphere {
         }
 
         let point = ray.at(root);
+        let normal = (point - self.center) / self.radius;
         Some((
             root,
             ShaderRecord {
-                point,
-                normal: (point - self.center) / self.radius,
+                point: point + normal * 0.0001,
+                normal,
                 hitable_id: 0,
                 material_id: self.material_id,
             },
@@ -100,15 +101,17 @@ impl Hitable for Triangle {
 
         let t = inv_det * edge2.dot(_cross_e1);
 
-        if t > tmin {
+        if t < 0.0 || t > tmin {
             return None;
         }
-
+        
+        let point = ray.at(t);
+        let normal = edge1.cross(edge2).normalize();
         Some((
             t,
             ShaderRecord {
-                point: ray.at(t),
-                normal: edge1.cross(edge2).normalize(),
+                point: point + normal * 0.0001,
+                normal,
                 hitable_id: 1,
                 material_id: self.material_id,
             },

@@ -17,7 +17,16 @@ impl Ray {
 }
 
 #[derive(Debug)]
+pub enum Reflectance {
+    Plain,
+    Reflective,
+    Refractive,
+}
+
+#[derive(Debug)]
 pub struct Material {
+    pub emissive: bool,
+    pub reflectance: Reflectance,
     pub albedo: Vec3,
 }
 

@@ -44,10 +44,30 @@ impl Scene {
         }        
         if let Some((_, record)) = self.hit_all(ray, f32::INFINITY) {
             let material = &self.materials[record.material_id];
+            if ray.direction.dot(record.normal) > 0.0 {
+                return result;
+            }
             
-
+            for light in self.point_lights.iter() {
+                let distance = (light.position - record.point).length();
+                let mut stmin = f32::INFINITY;
+                let shadow_ray = Ray::new(
+                    record.point,
+                    (light.position - record.point).normalize()
+                );
+                if let Some((st, _)) = self.hit_all(&shadow_ray, stmin) {
+                    stmin = st;
+                }
+                if stmin > distance {
+                    let h = (light.position - record.point).normalize();
+                    let blinn_phong = record.normal.dot(h).max(0.0).powi(32) / record.normal.dot(ray.direction).abs();
+                    let cos = record.normal.dot((light.position - record.point).normalize()).max(0.0);
+                    result += material.albedo * (blinn_phong * material.ks + material.kd) * cos
+                                              * light.color * light.intensity;
+                }
+            }
             match material.reflectance {
-                Reflectance::Reflective => {
+                Reflectance::Reflection => {
                     if record.normal.dot(-ray.direction) > 0.0 {
                         let reflect_ray = Ray::new(
                             record.point,
@@ -60,22 +80,6 @@ impl Scene {
                 _ => {}
             }
 
-            // light
-            for light in self.point_lights.iter() {
-                let distance = (light.position - record.point).length();
-                let mut stmin = f32::INFINITY;
-                let shadow_ray = Ray::new(
-                    record.point,
-                    (light.position - record.point).normalize()
-                );
-                if let Some((st, _)) = self.hit_all(&shadow_ray, stmin) {
-                    stmin = st;
-                }
-                if stmin > distance {
-                let kd = shadow_ray.direction.dot(record.normal).max(0.0);
-                    result += material.albedo * light.color * light.intensity * kd;
-                }
-            }
 
             result += material.albedo * 0.2; // ambient
         }

@@ -1,6 +1,10 @@
 .cache
+.vscode
+
 bin
 build
-output.ppm
 target
-/.vscode
+
+output.ppm
+output.png
+output.jpg

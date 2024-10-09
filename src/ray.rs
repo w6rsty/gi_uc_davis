@@ -18,9 +18,9 @@ impl Ray {
 
 #[derive(Debug)]
 pub enum Reflectance {
-    Plain,
-    Reflective,
-    Refractive,
+    None,
+    Reflection,
+    Refraction
 }
 
 #[derive(Debug)]
@@ -28,6 +28,22 @@ pub struct Material {
     pub emissive: bool,
     pub reflectance: Reflectance,
     pub albedo: Vec3,
+    pub kd: f32,
+    pub ks: f32,
+    pub shininess: u32,
+}
+
+impl Default for Material {
+    fn default() -> Self {
+        Material {
+            emissive: false,
+            reflectance: Reflectance::None,
+            albedo: Vec3::new(1.0, 1.0, 1.0),
+            kd: 1.0,
+            ks: 0.1,
+            shininess: 32,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
